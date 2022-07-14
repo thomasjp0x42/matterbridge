@@ -42,7 +42,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
 	b.connected = make(chan error)
-	b.channels = make(map[string]bool)
+	b.channels = make(chan config.ChannelInfo)
+//	b.channels = make(map[string]bool)
 
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
@@ -78,7 +79,7 @@ func (b *Birc) Connect() error {
 	}
 
 	b.Local = make(chan config.Message, b.MessageQueue+10)
-	b.channels = make(chan config.ChannelInfo, b.MessageQueue+10)
+	//	b.channels = make(chan config.ChannelInfo, b.MessageQueue+10)
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
 
 	i, err := b.getClient()

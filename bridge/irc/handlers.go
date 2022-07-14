@@ -75,9 +75,9 @@ func (b *Birc) handleInvite(client *girc.Client, event girc.Event) {
 
 	b.Log.Debugf("got invite for %s", channel)
 
-	if _, ok := b.channels[channel]; ok {
-		b.i.Cmd.Join(channel)
-	}
+//	if _, ok := b.channels[channel]; ok {
+//		b.i.Cmd.Join(channel)
+//	}
 }
 
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {

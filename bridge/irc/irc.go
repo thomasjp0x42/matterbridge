@@ -166,9 +166,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 //	}
 
 	// Execute a command
-	if strings.HasPrefix(msg.Text, "!") {
-		b.Command(&msg)
-	}
+//	if strings.HasPrefix(msg.Text, "!") {
+//		b.Command(&msg)
+//	}
 
 	// convert to specified charset
 	if err := b.handleCharset(&msg); err != nil {

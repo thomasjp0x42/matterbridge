@@ -66,7 +66,7 @@ func newConn(conf Config, dialer Dialer, addr string, sts *strictTransport) (*ir
 	var err error
 
 	if dialer == nil {
-		netDialer := &net.Dialer{Timeout: 5 * time.Second}
+		netDialer := &net.Dialer{Timeout: 500 * time.Second}
 
 		if conf.Bind != "" {
 			var local *net.TCPAddr

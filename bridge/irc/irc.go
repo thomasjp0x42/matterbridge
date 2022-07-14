@@ -98,8 +98,12 @@ func (b *Birc) Connect() error {
 	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
 	b.i = i
 
+	
+	go b.doJoin()
+	go b.doSend()
+	go b.doConnect()
+	
 	go func() {
-		go b.doConnect()
 		// Block until something happens...
 		<-b.connected
 
@@ -108,7 +112,6 @@ func (b *Birc) Connect() error {
 		if b.GetInt("DebugLevel") == 0 {
 			i.Handlers.Clear(girc.ALL_EVENTS)
 		}
-		go b.doSend()
 	}()
 	return nil
 }
@@ -119,21 +122,32 @@ func (b *Birc) Disconnect() error {
 	return nil
 }
 
-func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
-	b.channels[channel.Name] = true
-	// need to check if we have nickserv auth done before joining channels
-	for {
-		if b.authDone {
-			break
+func (b *Birc) doJoin() {
+	b.Log.Debugf("doJoin started")
+	rate := time.Millisecond * time.Duration(b.MessageDelay)
+	throttle := time.NewTicker(rate)
+	for channel := range b.channels {
+		b.Log.Debugf("got channel to join %s", channel.Name)
+		for {
+			if b.authDone {
+				break
+			}
+			//b.Log.Debugf("Waiting for auth to complete")
+			time.Sleep(time.Second)
 		}
-		time.Sleep(time.Second)
+		<-throttle.C
+		if channel.Options.Key != "" {
+			b.Log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
+			b.i.Cmd.JoinKey(channel.Name, channel.Options.Key)
+		} else {
+			b.i.Cmd.Join(channel.Name)
+		}
 	}
-	if channel.Options.Key != "" {
-		b.Log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
-		b.i.Cmd.JoinKey(channel.Name, channel.Options.Key)
-	} else {
-		b.i.Cmd.Join(channel.Name)
-	}
+}
+
+func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
+	// need to check if we have nickserv auth done before joining channels
+	b.channels <- channel
 	return nil
 }
 

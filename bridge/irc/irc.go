@@ -32,7 +32,7 @@ type Birc struct {
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
 	channels                                  map[string]bool
-
+//	channels				  chan config.ChannelInfo
 	*bridge.Config
 }
 
@@ -78,6 +78,7 @@ func (b *Birc) Connect() error {
 	}
 
 	b.Local = make(chan config.Message, b.MessageQueue+10)
+	//b.channels = make(chan config.ChannelInfo, b.MessageQueue+10)
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
 
 	i, err := b.getClient()

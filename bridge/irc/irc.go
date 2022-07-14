@@ -98,18 +98,18 @@ func (b *Birc) Connect() error {
 	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
 	b.i = i
 
-	go b.doConnect()
+	go func() {
+		go b.doConnect()
+		// Block until something happens...
+		<-b.connected
 
-	err = <-b.connected
-	if err != nil {
-		return fmt.Errorf("connection failed %s", err)
-	}
-	b.Log.Info("Connection succeeded")
-	b.FirstConnection = false
-	if b.GetInt("DebugLevel") == 0 {
-		i.Handlers.Clear(girc.ALL_EVENTS)
-	}
-	go b.doSend()
+		b.Log.Info("Connection succeeded")
+		b.FirstConnection = false
+		if b.GetInt("DebugLevel") == 0 {
+			i.Handlers.Clear(girc.ALL_EVENTS)
+		}
+		go b.doSend()
+	}()
 	return nil
 }
 
@@ -193,8 +193,8 @@ func (b *Birc) doConnect() {
 		if err := b.i.Connect(); err != nil {
 			b.Log.Errorf("disconnect: error: %s", err)
 			if b.FirstConnection {
-				b.connected <- err
-				return
+				// try again
+				continue
 			}
 		} else {
 			b.Log.Info("disconnect: client requested quit")
